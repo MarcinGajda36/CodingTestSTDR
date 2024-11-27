@@ -28,13 +28,13 @@ public class HackerNewsClient(
 
     public Task<ImmutableArray<long>> GetBestStoriesAsync(CancellationToken cancellationToken)
     {
-        const string BestStoriesV0 = "v0/beststories.json";
+        const string BestStories = "v0/beststories.json";
         return GetFromHackerNewsAsync(
-            BestStoriesV0,
+            BestStories,
             async (client, cancellationToken) =>
             {
-                var ids = await client.GetFromJsonAsync<long[]>(BestStoriesV0, jsonOptions, cancellationToken);
-                return ids?.ToImmutableArray() ?? throw new NullReferenceException($"Expected: array of Ids from: {BestStoriesV0} but got null");
+                var ids = await client.GetFromJsonAsync<long[]>(BestStories, jsonOptions, cancellationToken);
+                return ids?.ToImmutableArray() ?? throw new NullReferenceException($"Expected: array of Ids from: {BestStories} but got null");
             },
             cancellationToken);
     }
