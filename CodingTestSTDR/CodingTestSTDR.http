@@ -1,0 +1,6 @@
+@CodingTestSTDR_HostAddress = http://localhost:5071
+
+GET {{CodingTestSTDR_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
