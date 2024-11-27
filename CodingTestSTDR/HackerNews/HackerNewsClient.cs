@@ -52,8 +52,10 @@ public class HackerNewsClient(
     public async Task<HackerNewsStory> GetStoryAsync(long storyId, CancellationToken cancellationToken)
     {
         var storyItem = await GetItemAsync(storyId, cancellationToken);
-
-        // TODO
+        var time = DateTime.UnixEpoch.AddMilliseconds(storyItem.Time); // maybe? 
+        // TODO:
+        // 1) parse Time
+        // 2) for CommentCount i can go go through all storyItem.Kids and count HackerNewsStoryType.Comment, maybe SelectWhenAllAsync(int maxRequests)?
         throw null;
     }
 
