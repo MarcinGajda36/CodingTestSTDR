@@ -17,10 +17,10 @@ public class HackerNewsService(IHackerNewsClient hackerNewsClient)
     public async Task<HackerNewsStory> GetStoryAsync(long storyId, CancellationToken cancellationToken)
     {
         var storyItem = await hackerNewsClient.GetItemAsync(storyId, cancellationToken);
-        var time = DateTime.UnixEpoch.AddMilliseconds(storyItem.Time); // maybe? 
+        var time = DateTime.UnixEpoch.AddSeconds(storyItem.Time);
         // TODO:
-        // 1) parse Time
-        // 2) for CommentCount i can go go through all storyItem.Kids and count HackerNewsStoryType.Comment, maybe SelectWhenAllAsync(int maxRequests)?
+        // 2) for CommentCount i can go go through all storyItem.Kids and count HackerNewsStoryType.Comment,
+        // 3) maybe SelectWhenAllAsync(int maxRequests)?
         throw null;
     }
 }

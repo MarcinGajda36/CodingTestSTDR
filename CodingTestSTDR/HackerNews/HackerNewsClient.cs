@@ -2,6 +2,8 @@
 
 using System.Collections.Immutable;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
@@ -20,6 +22,10 @@ public class HackerNewsClient(
 
     private readonly Uri baseAddress = new("https://hacker-news.firebaseio.com/");
     private readonly MemoryCache cache = new(Options.Create(new MemoryCacheOptions { SizeLimit = cacheOptions.MaxSize }));
+    private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter() },
+    };
 
     public Task<ImmutableArray<long>> GetBestStoriesAsync(CancellationToken cancellationToken)
     {
@@ -28,7 +34,7 @@ public class HackerNewsClient(
             BestStoriesV0,
             async (client, cancellationToken) =>
             {
-                var ids = await client.GetFromJsonAsync<long[]>(BestStoriesV0, cancellationToken);
+                var ids = await client.GetFromJsonAsync<long[]>(BestStoriesV0, jsonOptions, cancellationToken);
                 return ids?.ToImmutableArray() ?? throw new NullReferenceException($"Expected: array of Ids from: {BestStoriesV0} but got null");
             },
             cancellationToken);
@@ -42,7 +48,7 @@ public class HackerNewsClient(
             itemUrl,
             async (client, cancellationToken) =>
             {
-                var item = await client.GetFromJsonAsync<HackerNewsItem>(itemUrl, cancellationToken);
+                var item = await client.GetFromJsonAsync<HackerNewsItem>(itemUrl, jsonOptions, cancellationToken);
                 return item ?? throw new NullReferenceException($"Expected: {nameof(HackerNewsItem)} from: {itemUrl} but got null");
             },
             cancellationToken);
