@@ -20,7 +20,6 @@ public class HackerNewsClient(
 {
     private const string IdPlaceholder = "{Placeholder}";
 
-    private readonly Uri baseAddress = new("https://hacker-news.firebaseio.com/");
     private readonly MemoryCache cache = new(Options.Create(new MemoryCacheOptions { SizeLimit = cacheOptions.MaxSize }));
     private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -62,8 +61,7 @@ public class HackerNewsClient(
         {
             entry.AbsoluteExpirationRelativeToNow = cacheOptions.AbsoluteExpirationRelativeToNow;
             entry.Size = 1;
-            using var client = clientFactory.CreateClient();
-            client.BaseAddress = baseAddress;
+            using var client = clientFactory.CreateClient(nameof(HackerNewsClient));
             var result = await resultFactory(client, cancellationToken);
             return result;
         })!;

@@ -10,14 +10,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        var configuration = builder.Configuration;
-        var cacheOptions = configuration.GetRequiredSection("CacheOptions").Get<HackerNewsCacheOptions>()!;
-
-        var services = builder.Services;
-        services.AddHttpClient();
-        services.AddSingleton(cacheOptions);
-        services.AddSingleton<IHackerNewsClient, HackerNewsClient>();
-        services.AddSingleton<IHackerNewsService, HackerNewsService>();
+        HackerNewsServices.AddServices(builder);
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
