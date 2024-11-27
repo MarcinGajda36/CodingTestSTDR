@@ -9,7 +9,6 @@ public interface IHackerNewsClient
 {
     Task<ImmutableArray<long>> GetBestStoriesAsync(CancellationToken cancellationToken);
     Task<HackerNewsItem> GetItemAsync(long itemId, CancellationToken cancellationToken);
-    Task<HackerNewsStory> GetStoryAsync(long storyId, CancellationToken cancellationToken);
 }
 
 public class HackerNewsClient(
@@ -29,8 +28,8 @@ public class HackerNewsClient(
             BestStoriesV0,
             async (client, cancellationToken) =>
             {
-                var bestStories = await client.GetFromJsonAsync<long[]>(BestStoriesV0, cancellationToken);
-                return bestStories?.ToImmutableArray() ?? throw new NullReferenceException($"Expected: array of Ids from: {BestStoriesV0} but got null");
+                var ids = await client.GetFromJsonAsync<long[]>(BestStoriesV0, cancellationToken);
+                return ids?.ToImmutableArray() ?? throw new NullReferenceException($"Expected: array of Ids from: {BestStoriesV0} but got null");
             },
             cancellationToken);
     }
@@ -43,20 +42,10 @@ public class HackerNewsClient(
             itemUrl,
             async (client, cancellationToken) =>
             {
-                var bestStories = await client.GetFromJsonAsync<HackerNewsItem>(itemUrl, cancellationToken);
-                return bestStories ?? throw new NullReferenceException($"Expected: {nameof(HackerNewsItem)} from: {itemUrl} but got null");
+                var item = await client.GetFromJsonAsync<HackerNewsItem>(itemUrl, cancellationToken);
+                return item ?? throw new NullReferenceException($"Expected: {nameof(HackerNewsItem)} from: {itemUrl} but got null");
             },
             cancellationToken);
-    }
-
-    public async Task<HackerNewsStory> GetStoryAsync(long storyId, CancellationToken cancellationToken)
-    {
-        var storyItem = await GetItemAsync(storyId, cancellationToken);
-        var time = DateTime.UnixEpoch.AddMilliseconds(storyItem.Time); // maybe? 
-        // TODO:
-        // 1) parse Time
-        // 2) for CommentCount i can go go through all storyItem.Kids and count HackerNewsStoryType.Comment, maybe SelectWhenAllAsync(int maxRequests)?
-        throw null;
     }
 
     private Task<TResult> GetFromHackerNewsAsync<TResult>(

@@ -17,6 +17,7 @@ public class Program
         services.AddHttpClient();
         services.AddSingleton(cacheOptions);
         services.AddSingleton<IHackerNewsClient, HackerNewsClient>();
+        services.AddSingleton<IHackerNewsService, HackerNewsService>();
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
