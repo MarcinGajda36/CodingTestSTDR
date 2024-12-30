@@ -11,7 +11,8 @@ public static class HackerNewsServices
         var services = builder.Services;
         services.AddHttpClient<HackerNewsClient>(client => client.BaseAddress = hackerNewsUrl);
         services.AddSingleton(cacheOptions);
-        services.AddSingleton<IHackerNewsClient, HackerNewsClient>();
+        services.AddSingleton<HackerNewsClient>();
+        services.AddSingleton<IHackerNewsClient, ThrottlingHackerNewsClient>();
         services.AddSingleton<IHackerNewsService, HackerNewsService>();
 
         return builder;

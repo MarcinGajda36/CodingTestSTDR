@@ -4,13 +4,37 @@ using System.Collections.Immutable;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using CodingTestSTDR.Parallelisms;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 public interface IHackerNewsClient
 {
-    Task<ImmutableArray<long>> GetBestStoriesAsync(CancellationToken cancellationToken);
+    Task<ImmutableArray<long>> GetBestStoriesIdsAsync(CancellationToken cancellationToken);
     Task<HackerNewsItem> GetItemAsync(long itemId, CancellationToken cancellationToken);
+}
+
+public class ThrottlingHackerNewsClient(HackerNewsClient hackerNewsClient)
+    : IHackerNewsClient
+{
+    private readonly PerKeySynchronizer keySynchronizer = new();
+    public Task<ImmutableArray<long>> GetBestStoriesIdsAsync(CancellationToken cancellationToken)
+        => keySynchronizer.SynchronizeAsync(
+            nameof(GetBestStoriesIdsAsync),
+            hackerNewsClient,
+            (hackerNewsClient, token) => hackerNewsClient.GetBestStoriesIdsAsync(token),
+            cancellationToken);
+
+    public Task<HackerNewsItem> GetItemAsync(long itemId, CancellationToken cancellationToken)
+        => keySynchronizer.SynchronizeAsync(
+            itemId,
+            (hackerNewsClient, itemId),
+            (clientIdPair, token) =>
+            {
+                var (client, id) = clientIdPair;
+                return client.GetItemAsync(id, token);
+            },
+            cancellationToken);
 }
 
 public class HackerNewsClient(
@@ -18,15 +42,13 @@ public class HackerNewsClient(
     HackerNewsCacheOptions cacheOptions)
     : IHackerNewsClient
 {
-    private const string IdPlaceholder = "{Placeholder}";
-
     private readonly MemoryCache cache = new(Options.Create(new MemoryCacheOptions { SizeLimit = cacheOptions.MaxSize }));
     private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
     {
         Converters = { new JsonStringEnumConverter() },
     };
 
-    public Task<ImmutableArray<long>> GetBestStoriesAsync(CancellationToken cancellationToken)
+    public Task<ImmutableArray<long>> GetBestStoriesIdsAsync(CancellationToken cancellationToken)
     {
         const string BestStories = "v0/beststories.json";
         return GetFromHackerNewsAsync(
@@ -41,8 +63,7 @@ public class HackerNewsClient(
 
     public Task<HackerNewsItem> GetItemAsync(long storyId, CancellationToken cancellationToken)
     {
-        const string ItemTemplate = $"/v0/item/{IdPlaceholder}.json";
-        var itemUrl = ItemTemplate.Replace(IdPlaceholder, storyId.ToString());
+        var itemUrl = $"/v0/item/{storyId}.json";
         return GetFromHackerNewsAsync(
             itemUrl,
             async (client, cancellationToken) =>
