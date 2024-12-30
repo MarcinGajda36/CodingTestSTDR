@@ -14,12 +14,13 @@ public interface IHackerNewsClient
     Task<HackerNewsItem> GetItemAsync(long itemId, CancellationToken cancellationToken);
 }
 
-public class ThrottlingHackerNewsClient(
+public sealed class ThrottlingHackerNewsClient(
     HackerNewsClient hackerNewsClient,
     HackerNewsThrottlingOptions throttlingOptions)
-    : IHackerNewsClient
+    : IHackerNewsClient, IDisposable
 {
     private readonly PerKeySynchronizer keySynchronizer = new(throttlingOptions.MaxDegreeOfParallelism);
+
     public Task<ImmutableArray<long>> GetBestStoriesIdsAsync(CancellationToken cancellationToken)
         => keySynchronizer.SynchronizeAsync(
             nameof(GetBestStoriesIdsAsync),
@@ -37,12 +38,15 @@ public class ThrottlingHackerNewsClient(
                 return client.GetItemAsync(id, token);
             },
             cancellationToken);
+
+    public void Dispose()
+        => keySynchronizer.Dispose();
 }
 
-public class HackerNewsClient(
+public sealed class HackerNewsClient(
     IHttpClientFactory clientFactory,
     HackerNewsCacheOptions cacheOptions)
-    : IHackerNewsClient
+    : IHackerNewsClient, IDisposable
 {
     private readonly MemoryCache cache = new(Options.Create(new MemoryCacheOptions { SizeLimit = cacheOptions.MaxSize }));
     private readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
@@ -88,4 +92,7 @@ public class HackerNewsClient(
             var result = await resultFactory(client, cancellationToken);
             return result;
         })!;
+
+    public void Dispose()
+        => cache.Dispose();
 }

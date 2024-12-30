@@ -51,9 +51,8 @@ public sealed class PerKeySynchronizer : IDisposable
         var original = Interlocked.Exchange(ref pool!, null);
         if (original != null)
         {
-            Array.ForEach(pool, pool_ => pool_.Dispose());
+            Array.ForEach(original, semaphore => semaphore.Dispose());
+            GC.SuppressFinalize(this);
         }
-
-        GC.SuppressFinalize(this);
     }
 }
