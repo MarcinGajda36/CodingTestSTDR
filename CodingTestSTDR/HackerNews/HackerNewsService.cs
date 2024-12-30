@@ -33,7 +33,8 @@ public class HackerNewsService(IHackerNewsClient hackerNewsClient)
         var kids = await Task.WhenAll(
             storyItem.Kids.Select(id => hackerNewsClient.GetItemAsync(id, cancellationToken)));
         var commentCount = kids.Count(item => item.Type is HackerNewsStoryType.Comment);
-        return new HackerNewsStory(storyItem.Title,
+        return new HackerNewsStory(
+            storyItem.Title,
             storyItem.Url,
             storyItem.By,
             time,

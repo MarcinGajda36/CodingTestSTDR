@@ -31,9 +31,9 @@ public sealed class HackerNewsController(IHackerNewsService hackerNewsService)
         {
             return Ok(await hackerNewsService.GetStoryAsync(storyId, cancellationToken));
         }
-        catch (HackerNewsNotFoundException)
+        catch (HackerNewsNotFoundException notFound)
         {
-            return NotFound(new { Message = $"StoryId: '{storyId}' was not found.", RequestedStoryId = storyId });
+            return NotFound(new { Message = $"StoryId: '{notFound.ItemId}' was not found.", RequestedStoryId = storyId });
         }
     }
 }
