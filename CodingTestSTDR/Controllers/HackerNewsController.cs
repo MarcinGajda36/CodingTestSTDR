@@ -18,7 +18,7 @@ public sealed class HackerNewsController(IHackerNewsService hackerNewsService)
     {
         if (storyCount < 1)
         {
-            return BadRequest(new { Message = "Story count has to be at least 1.", StoryCount = storyCount });
+            return BadRequest(new { Message = "Story count has to be at least 1.", RequestedStoryCount = storyCount });
         }
 
         return Ok(await hackerNewsService.GetBestStoriesAsync(storyCount, cancellationToken));
@@ -33,7 +33,7 @@ public sealed class HackerNewsController(IHackerNewsService hackerNewsService)
         }
         catch (HackerNewsNotFoundException)
         {
-            return NotFound(new { Message = $"StoryId: '{storyId}' was not found.", StoryId = storyId });
+            return NotFound(new { Message = $"StoryId: '{storyId}' was not found.", RequestedStoryId = storyId });
         }
     }
 }
