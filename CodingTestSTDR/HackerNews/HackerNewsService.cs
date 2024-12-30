@@ -21,7 +21,8 @@ public class HackerNewsService(IHackerNewsClient hackerNewsClient)
         var allBestStoriesIds = await GetBestStoriesIdsAsync(cancellationToken);
         var countBestStoriesIds = allBestStoriesIds.Take(storiesCount);
         var stories = await Task.WhenAll(countBestStoriesIds.Select(id => GetStoryAsync(id, cancellationToken)));
-        Array.Sort(stories, (lStory, rStory) => lStory.Score.CompareTo(rStory.Score));
+        Comparison<HackerNewsStory> descendingScore = static (lStory, rStory) => -lStory.Score.CompareTo(rStory.Score);
+        Array.Sort(stories, descendingScore);
         return stories;
     }
 

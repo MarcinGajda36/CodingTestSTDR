@@ -14,10 +14,12 @@ public interface IHackerNewsClient
     Task<HackerNewsItem> GetItemAsync(long itemId, CancellationToken cancellationToken);
 }
 
-public class ThrottlingHackerNewsClient(HackerNewsClient hackerNewsClient)
+public class ThrottlingHackerNewsClient(
+    HackerNewsClient hackerNewsClient,
+    HackerNewsThrottlingOptions throttlingOptions)
     : IHackerNewsClient
 {
-    private readonly PerKeySynchronizer keySynchronizer = new();
+    private readonly PerKeySynchronizer keySynchronizer = new(throttlingOptions.MaxDegreeOfParallelism);
     public Task<ImmutableArray<long>> GetBestStoriesIdsAsync(CancellationToken cancellationToken)
         => keySynchronizer.SynchronizeAsync(
             nameof(GetBestStoriesIdsAsync),

@@ -1,11 +1,10 @@
 ﻿namespace CodingTestSTDR.Parallelisms;
 
-public class PerKeySynchronizer : IDisposable
+public sealed class PerKeySynchronizer : IDisposable
 {
-    private readonly SemaphoreSlim[] pool;
-    private bool disposedValue;
+    private SemaphoreSlim[] pool;
 
-    public PerKeySynchronizer(int maxDegreeOfParallelism = 17)
+    public PerKeySynchronizer(int maxDegreeOfParallelism)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(maxDegreeOfParallelism, 1);
         pool = new SemaphoreSlim[maxDegreeOfParallelism];
@@ -47,23 +46,14 @@ public class PerKeySynchronizer : IDisposable
         }
     }
 
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                Array.ForEach(pool, pool_ => pool_.Dispose());
-            }
-
-            disposedValue = true;
-        }
-    }
-
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-        Dispose(disposing: true);
+        var original = Interlocked.Exchange(ref pool!, null);
+        if (original != null)
+        {
+            Array.ForEach(pool, pool_ => pool_.Dispose());
+        }
+
         GC.SuppressFinalize(this);
     }
 }
