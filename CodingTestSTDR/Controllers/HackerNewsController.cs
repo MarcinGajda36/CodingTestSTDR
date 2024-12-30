@@ -14,10 +14,26 @@ public sealed class HackerNewsController(IHackerNewsService hackerNewsService)
         => hackerNewsService.GetBestStoriesIdsAsync(cancellationToken);
 
     [HttpGet("GetBestStories/{storyCount}")]
-    public Task<HackerNewsStory[]> GetBestStoriesAsync(int storyCount, CancellationToken cancellationToken)
-        => hackerNewsService.GetBestStoriesAsync(storyCount, cancellationToken);
+    public async Task<ActionResult<HackerNewsStory[]>> GetBestStoriesAsync(int storyCount, CancellationToken cancellationToken)
+    {
+        if (storyCount < 1)
+        {
+            return BadRequest(new { Message = "Story count has to be at least 1.", StoryCount = storyCount });
+        }
+
+        return Ok(await hackerNewsService.GetBestStoriesAsync(storyCount, cancellationToken));
+    }
 
     [HttpGet("GetStory/{storyId}")]
-    public Task<HackerNewsStory> GetStoryAsync(long storyId, CancellationToken cancellationToken)
-        => hackerNewsService.GetStoryAsync(storyId, cancellationToken);
+    public async Task<ActionResult<HackerNewsStory>> GetStoryAsync(long storyId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Ok(await hackerNewsService.GetStoryAsync(storyId, cancellationToken));
+        }
+        catch (HackerNewsNotFoundException)
+        {
+            return NotFound(new { Message = $"StoryId: '{storyId}' was not found.", StoryId = storyId });
+        }
+    }
 }

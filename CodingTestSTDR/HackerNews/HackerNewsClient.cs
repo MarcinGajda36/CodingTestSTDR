@@ -71,7 +71,7 @@ public class HackerNewsClient(
             async (client, cancellationToken) =>
             {
                 var item = await client.GetFromJsonAsync<HackerNewsItem>(itemUrl, jsonOptions, cancellationToken);
-                return item ?? throw new NullReferenceException($"Expected: {nameof(HackerNewsItem)} from: {itemUrl} but got null");
+                return item ?? throw new HackerNewsNotFoundException(storyId);
             },
             cancellationToken);
     }
