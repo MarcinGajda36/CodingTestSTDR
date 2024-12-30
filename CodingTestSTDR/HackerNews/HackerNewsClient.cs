@@ -63,15 +63,15 @@ public class HackerNewsClient(
             cancellationToken);
     }
 
-    public Task<HackerNewsItem> GetItemAsync(long storyId, CancellationToken cancellationToken)
+    public Task<HackerNewsItem> GetItemAsync(long itemId, CancellationToken cancellationToken)
     {
-        var itemUrl = $"/v0/item/{storyId}.json";
+        var itemUrl = $"/v0/item/{itemId}.json";
         return GetFromHackerNewsAsync(
             itemUrl,
             async (client, cancellationToken) =>
             {
                 var item = await client.GetFromJsonAsync<HackerNewsItem>(itemUrl, jsonOptions, cancellationToken);
-                return item ?? throw new HackerNewsNotFoundException(storyId);
+                return item ?? throw new HackerNewsNotFoundException(itemId);
             },
             cancellationToken);
     }
